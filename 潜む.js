@@ -3,8 +3,16 @@
 ■概要
 　カスタムスキル「潜む」を持ったユニットは地形効果による回避率が倍になります。
 　スキルにキーワード(bushing)を指定してください。
+  追加：スキルにキーワード(kaihi)を指定すると、回避が+50されます。
+　追加2：スキルにキーワード(noavoid)を指定すると、地形ボーナスの恩恵が
+	 無くなります。
+　追加3：スキルにキーワード(flyer)を指定すると、クラスタイプが地形ボーナス
+	 を考慮しない場合(例：飛行ユニット)も、その恩恵を受けられます。
 
 ■24/04/12  KuMar(クマー）製作
+　25/07/12  新たに回避が+50になるスキルを追加
+  25/08/25　新たに地形効果を受けられないスキル"noavoid"を追加
+  25/09/03  新たに飛行ユニットも地形効果を受けられる"flyer"を追加
 
 ■規約
 ・利用はSRPG Studioを使ったゲームに限ります。
@@ -32,13 +40,33 @@ AbilityCalculator.getAvoid = function(unit) {
 			if (terrain !== null) {
 				if (SkillControl.getPossessionCustomSkill(unit,'bushing')) {
 					avoid = avoid + terrain.getAvoid()*2;
+				} else if (SkillControl.getPossessionCustomSkill(unit,'noavoid')) {
+					avoid = avoid;
+				} else {
+					avoid = avoid + terrain.getAvoid();
+				}
+			}
+		// カスタムパラメータ"flyer"を持っていれば「地形効果」を受けることができる
+		} else if (SkillControl.getPossessionCustomSkill(unit,'flyer')) {
+			terrain = PosChecker.getTerrainFromPos(unit.getMapX(), unit.getMapY());
+			if (terrain !== null) {
+				if (SkillControl.getPossessionCustomSkill(unit,'bushing')) {
+					avoid = avoid + terrain.getAvoid()*2;
+				} else if (SkillControl.getPossessionCustomSkill(unit,'noavoid')) {
+					avoid = avoid;
 				} else {
 					avoid = avoid + terrain.getAvoid();
 				}
 			}
 		}
-		
-		return avoid;
+
+		if (SkillControl.getPossessionCustomSkill(unit,'kaihi')) {
+			return avoid + 50;
+		} else if (SkillControl.getPossessionCustomSkill(unit,'Autoavoid')) { 
+			return avoid + avoid;
+		} else {
+			return avoid;
+		}
 	}
 
 })();
